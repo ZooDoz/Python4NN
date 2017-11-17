@@ -6,7 +6,8 @@ from random import choice
 from math import *
 
 """
-AI player, use Monte Carlo Tree Search with UCB
+这是一个模仿mcts_uct_base来实现的算法，
+在模拟的时候忘记处理了子节点的权值的更新(标准错误)
 这是横向扩张的方法
 例如有1 2 3 4 5 6 7 8 9个点
 1已经走过了，剩余2 3 4 5 6 7 8 9
