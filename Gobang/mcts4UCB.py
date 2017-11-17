@@ -7,9 +7,14 @@ from math import *
 
 """
 AI player, use Monte Carlo Tree Search with UCB
-这是横向扩张的方法，对该节点的下一个节点进行ucb
+这是横向扩张的方法
+例如有1 2 3 4 5 6 7 8 9个点
+1已经走过了，剩余2 3 4 5 6 7 8 9
+分别对剩余8个点进行随机模拟，按照ucb算法选出最优点
+这种方法没有对深度进行加权处理，随机性很大
+只是停留在对这8个点的随机模拟，主要应对的是概率随机的区间的收敛
 """
-class mcts4uct(object):
+class mcts4ucb(object):
 
     """
     模拟
@@ -58,12 +63,13 @@ class mcts4uct(object):
             simulations+=1
             print("模拟次数：", move , win , winer)
       
+        confident=1.96
         #对已经计算的节点进行选择
         log_total = log(sum(value[0] for key,value in node.items()))
         #获取ucb最大的节点
         bonus,move=max(
             #
-            (value[1]/value[0]+sqrt(2 * log_total / value[0])
+            (value[1]/value[0]+sqrt(confident*log_total / value[0])
             ,key) 
                 for key,value in node.items())
         print("模拟次数：", simulations)
@@ -91,7 +97,7 @@ class mcts4uct(object):
             #获取ucb最大的节点
             bonus,move=max(
                 #
-                (value[1]/value[0]+confident*sqrt(2 * log_total / value[0])
+                (value[1]/value[0]+confident*sqrt(log_total / value[0])
                 ,key)
                  for key,value in node.items())
         else:

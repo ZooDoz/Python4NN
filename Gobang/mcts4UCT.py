@@ -7,6 +7,14 @@ from math import *
 
 """
 AI player, use Monte Carlo Tree Search with UCB
+这是纵向扩张方法
+例如有1 2 3 4 5 6 7 8 9个点
+1已经走过了，剩余2 3 4 5 6 7 8 9
+注意处理的是一个树上的所有节点，对深度进行了加权
+第一次开始走 2 3 4 5 6 7 8 获得结果后对这颗树上的节点进行ucb处理
+第二次找到 9 还没有处理从9开始 3 6 8 然后对这颗树上节点进行ucb处理
+所有节点都处理过了，就可以根据ucb公式进行处理了
+这样的算法是ucb的tree
 """
 class mcts4uct(object):
 
@@ -16,16 +24,19 @@ class mcts4uct(object):
     def run_simulation(self,board,play_turn):
         #对当前节点进行模拟
         #采用随机算法进行模拟
+        #返回当前术的节点结构
+        node=[]
         for _ in range(1, len(board.availables) + 1):
             move=choice(board.availables)
             player=board.get_player(play_turn)
             board.update(player,move)
+            node.append(move)
             #胜利
             win,winner = board.has_a_winner(board)
             if win:
-                return win,winner
+                return win,winner,node
         #如果没有结果也算失败
-        return False,-1
+        return False,-1,node
 
 
     '''
@@ -50,19 +61,20 @@ class mcts4uct(object):
             #决策树进行决策
             move=self.select_one_move(board_copy,play_turn_copy,node)
             #模拟当前决策结果
-            win,winer=self.run_simulation(board_copy,play_turn_copy)
-            #反向更新节点
-            self.update(node,move,win,winer,c_p)
+            win,winer,c_node=self.run_simulation(board_copy,play_turn_copy)
+            #反向更新树
+            self.update(node,c_node,move,win,winer,c_p)
             #记录次数
             simulations+=1
             print("模拟次数：", move , win , winer)
       
+        confident=1.96
         #对已经计算的节点进行选择
         log_total = log(sum(value[0] for key,value in node.items()))
         #获取ucb最大的节点
         bonus,move=max(
             #
-            (value[1]/value[0]+sqrt(2 * log_total / value[0])
+            (value[1]/value[0]+confident*sqrt(log_total / value[0])
             ,key) 
                 for key,value in node.items())
         print("模拟次数：", simulations)
@@ -90,7 +102,7 @@ class mcts4uct(object):
             #获取ucb最大的节点
             bonus,move=max(
                 #
-                (value[1]/value[0]+confident*sqrt(2 * log_total / value[0])
+                (value[1]/value[0]+confident*sqrt(log_total / value[0])
                 ,key)
                  for key,value in node.items())
         else:
@@ -102,16 +114,24 @@ class mcts4uct(object):
             board.update(player,move)
         return move
 
-    def update(self,node,move,win,winer,c_p):
+    def update(self,node,c_node,move,win,winer,c_p):
         if win and winer==c_p:
             w=1
         else:
             w=-1
+        self.updateNode(node,move,2)
+        for c_move in c_node:
+            self.updateNode(node,c_move,w)
+
+    def updateNode(self,node,move,w):
         if move not in node:
             node[move]=[1,1]
         else:
             node[move][0]+=1
             node[move][1]+=w
+
+
+
 
         
     
