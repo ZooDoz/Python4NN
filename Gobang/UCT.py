@@ -6,7 +6,6 @@ from random import choice
 from math import *
 
 """
-这不是一个mcts
 这是纵向扩张方法
 例如有1 2 3 4 5 6 7 8 9个点
 1已经走过了，剩余2 3 4 5 6 7 8 9
@@ -14,9 +13,9 @@ from math import *
 第一次开始走 2 3 4 5 6 7 8 获得结果后对这颗树上的节点进行ucb处理
 第二次找到 9 还没有处理从9开始 3 6 8 然后对这颗树上节点进行ucb处理
 所有节点都处理过了，就可以根据ucb公式进行处理了
-这样的算法是ucb的tree
+这应该是一个标准的mcst_uct树了
 """
-class uct1(object):
+class uct(object):
 
     """
     模拟
