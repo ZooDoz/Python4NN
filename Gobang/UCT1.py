@@ -6,7 +6,7 @@ from random import choice
 from math import *
 
 """
-AI player, use Monte Carlo Tree Search with UCB
+这不是一个mcts
 这是纵向扩张方法
 例如有1 2 3 4 5 6 7 8 9个点
 1已经走过了，剩余2 3 4 5 6 7 8 9
@@ -16,7 +16,7 @@ AI player, use Monte Carlo Tree Search with UCB
 所有节点都处理过了，就可以根据ucb公式进行处理了
 这样的算法是ucb的tree
 """
-class mcts4uct(object):
+class uct1(object):
 
     """
     模拟
