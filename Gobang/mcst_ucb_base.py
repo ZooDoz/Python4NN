@@ -2,6 +2,10 @@
 这是一个ucb1算法的实现
 处理的是多臂赌博机问题
 拉一次拉杆，获得一个随机数，然后更新节点
+目前这里实现的是一个很特殊的情况
+这棵树只有叶子节点，没有深度
+所以模拟策略没有产生子节点
+所以反向更新特比简单
 '''
 from math import *
 from random import *
@@ -41,7 +45,7 @@ def update(id,value):
         ucbNode[id][1]+=value
 
 
-def ucb():
+def mcst_uct():
     for _ in range(0,1000):
         #选择
         id=select_arm()
@@ -54,7 +58,7 @@ def ucb():
     id=select_arm()
     print(id)
 
-ucb()
+mcst_uct()
 
 
 
