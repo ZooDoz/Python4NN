@@ -37,7 +37,7 @@ class Game(object):
             end, winner = self.game_end(board)
             if end:
                 if winner != -1:
-                    print("Game end. Winner is", players[winner])
+                    print("Game end. Winner is", players[winner].type)
                 break
 
 

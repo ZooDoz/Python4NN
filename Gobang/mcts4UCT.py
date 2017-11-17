@@ -16,7 +16,7 @@ class mcts4uct(object):
     def run_simulation(self,board,play_turn):
         #对当前节点进行模拟
         #采用随机算法进行模拟
-        for _ in range(1, 100):
+        for _ in range(1, len(board.availables) + 1):
             move=choice(board.availables)
             player=board.get_player(play_turn)
             board.update(player,move)
@@ -24,9 +24,6 @@ class mcts4uct(object):
             win,winner = board.has_a_winner(board)
             if win:
                 return win,winner
-            #平局
-            if not len(board.availables):
-                return False,-1
         #如果没有结果也算失败
         return False,-1
 
@@ -59,8 +56,16 @@ class mcts4uct(object):
             #记录次数
             simulations+=1
             print("模拟次数：", move , win , winer)
+      
+        #对已经计算的节点进行选择
+        log_total = log(sum(value[0] for key,value in node.items()))
+        #获取ucb最大的节点
+        bonus,move=max(
+            #
+            (value[1]/value[0]+sqrt(2 * log_total / value[0])
+            ,key) 
+                for key,value in node.items())
         print("模拟次数：", simulations)
-        move=self.select_one_move(board_copy,play_turn_copy,node)
         location=board.move_to_location(move)
         print("Ai move: %d,%d\n" % (location[0],location[1]))
         return move
@@ -83,10 +88,10 @@ class mcts4uct(object):
             #因此total(v) = sum(total(v’),for v’ in childs(v))
             log_total = log(sum(value[0] for key,value in node.items()))
             #获取ucb最大的节点
-            bonus,id=max(
+            bonus,move=max(
                 #
-                (value[1]/value[0]+sqrt(2 * totalCount / value[0])
-                ,key) 
+                (value[1]/value[0]+confident*sqrt(2 * log_total / value[0])
+                ,key)
                  for key,value in node.items())
         else:
             #需要扩展的节点

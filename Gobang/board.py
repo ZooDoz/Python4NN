@@ -4,7 +4,7 @@ class Board(object):
     board for game
     '''
     '''构造函数'''
-    def __init__(self,width=6,height=6,n_in_row=4):
+    def __init__(self,width=9,height=9,n_in_row=5):
         self.width=width
         self.height=height
         # 记录当前棋盘的状态，键是位置，值是棋子，这里用玩家来表示棋子类型
