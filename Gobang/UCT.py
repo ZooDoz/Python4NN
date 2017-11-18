@@ -87,6 +87,8 @@ class uct(object):
     '''
     def select_one_move(self,board,play_turn,node):
         #当前剩余可走位置
+        #这里有问题，循环迭代的时候应该剔除已经生成的树的节点
+        #按照mcts算法的要求，目前我是这么理解的
         availables=board.availables
         confident=1.96
         #selection
@@ -119,6 +121,7 @@ class uct(object):
         else:
             w=-1
         self.updateNode(node,move,2)
+        #这里的反向更新有问题，因为路径是两个人的，所以胜利要区分先后
         for c_move in c_node:
             self.updateNode(node,c_move,w)
 
