@@ -1,18 +1,19 @@
 '''
 mcst
-一个mcst树，使用随机来进行模拟
-一般来说mcst的每层节点应该是独立的，即树状结构
+一个mcst树树状结构
           1
       2        3
     4   5    6    7
-这样的结构，各个节点是相互独立的
-还有不独立的，这里不做讨论
+这是为了理解mcst而写的一个例子
+到达一关需要roll点，
+大于某个值的话可以继续深入，
+求那条路径最容易通过
 '''
 from math import *
 from random import *
 
 #节点
-class node:
+class node(object):
     def __init__(self,id,roll):
         self.id=id
         self.roll=roll
@@ -26,55 +27,80 @@ class node:
         self.nt=nt
     def addCount(self):
         self.c+=1
+    def subCount(self):
+        self.c-=1
     def visit(self):
         self.v=1
 
     
-#选择
+#尝试找出一个结果，保存这个树
+#如果所有子节点都在树上，就进行选择一直到产生结果
+#例如 1-2.3都有数据则需要根据max取值，但是此时还没有结果，需要继续寻找下一个节点
 def select_arm(node):
     #如果到达叶子节点了
     if node.nt is None:
-        return node
+        return node,True
     #如果都访问过了
     elif all(n.v for n in node.nt):
-        return max(node.nt , key=lambda x: x.c)
+        #贪婪算法在这里不适合
+        chose=max(node.nt , key=lambda x: x.c)
     else:
         #扩展出来一个新的节点，进行访问
-        chose=choice(node.nt)
+        ns = list(filter(lambda x: x.v==0,node.nt))
+        chose=choice(ns)
         #标记节点
         chose.visit()
-        return chose
+        #模拟是否结束
+        #未结束则寻找下一个节点
+    if(not chose.nt is None and simulation(chose)):
+        return select_arm(chose)
+    return chose,False
+    
 #模拟
 def simulation(node):
     #如果是叶子节点，获得结果
     if node.nt is None:
-        return choice(node.roll)>5
+        v=choice(node.roll)>5
+        print("none " ,v)
+        return v
     else:
         #判断结果，如果可以，则模拟节点
-        if choice(node.roll)<=5:
+        v=choice(node.roll)<=5
+        print("node " ,v)
+        if v:
             return False
         else:
-            return mcst(node)
+            return True
     
 
 #反向更新节点
 def update(subNode,value):
-    if value :
+    if value==True :
         subNode.addCount()
-        if not subNode.pe is None:
+    else:
+        subNode.subCount()
+    if not subNode.pe is None:
             update(subNode.pe,value)
+        
 
 
 def mcst(node):
     #构建访问信息节点
     #print("正在访问节点: " , node.id)
-    for _ in range(0,1000):
+    for _ in range(0,100):
         #选择
-        subNode=select_arm(node)
+        subNode,value=select_arm(node)
+        print("模拟节点：",subNode.id)
+        #半路就失败了
+        if(value==True):
+             #反向更新
+            update(subNode,value)
+            print("获得模拟结果1：",value , subNode.c)
+            continue
         #模拟
         value=simulation(subNode)
-        #反向更新
         update(subNode,value)
+        print("获得模拟结果2：",value)
         #print("正在反向更新节点:" , subNode.id , value)
     #if not node.nt is None:
     #    k,v=max((n.c , n.id) for n in node.nt)
@@ -83,15 +109,15 @@ def mcst(node):
 
 
 node1=node(1,[1,6,9])
-node2=node(2,[2,8,8])
+node2=node(2,[8,2,8])
 node3=node(3,[3,4,9])
 
 node1.ntNodes([node2,node3])
 node2.peNode(node1)
 node3.peNode(node1)
 
-node4=node(4,[6,5,8])
-node5=node(5,[4,7,3])
+node4=node(4,[3,5,2])
+node5=node(5,[8,2,6])
 
 node2.ntNodes([node4,node5])
 node3.peNode(node2)
