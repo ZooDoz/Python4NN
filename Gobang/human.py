@@ -1,4 +1,4 @@
-from mcts4UCT import mcts4uct as MCTS
+from uct_rave import uct_rave as MCTS
 
 class Human(object):
     """

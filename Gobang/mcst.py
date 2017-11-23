@@ -36,37 +36,52 @@ class node(object):
 #尝试找出一个结果，保存这个树
 #如果所有子节点都在树上，就进行选择一直到产生结果
 #例如 1-2.3都有数据则需要根据max取值，但是此时还没有结果，需要继续寻找下一个节点
-def select_arm(node):
-    #如果到达叶子节点了
-    if node.nt is None:
-        return node,True
-    #如果都访问过了
-    elif all(n.v for n in node.nt):
-        #贪婪算法在这里不适合
-        chose=max(node.nt , key=lambda x: x.c)
-    else:
-        #扩展出来一个新的节点，进行访问
-        ns = list(filter(lambda x: x.v==0,node.nt))
-        chose=choice(ns)
-        #标记节点
-        chose.visit()
-        #模拟是否结束
-        #未结束则寻找下一个节点
-    if(not chose.nt is None and simulation(chose)):
-        return select_arm(chose)
-    return chose,False
+def simTree(node):
+    # #这里是递归调用
+    # #如果到达叶子节点了
+    # if node.nt is None:
+    #     return node,True
+    # #如果都访问过了
+    # elif all(n.v for n in node.nt):
+    #     #贪婪算法在这里不适合
+    #     chose=max(node.nt , key=lambda x: x.c)
+    # else:
+    #     #扩展出来一个新的节点，进行访问
+    #     ns = list(filter(lambda x: x.v==0,node.nt))
+    #     chose=choice(ns)
+    #     #标记节点
+    #     chose.visit()
+    #     #模拟是否结束
+    #     #未结束则寻找下一个节点
+    # if(not chose.nt is None and simulation(chose)):
+    #     return select_arm(chose)
+    # return chose,False
+    while not node.nt is None:
+        if all(n.v for n in node.nt):
+            #贪婪算法在这里不适合
+           chose=max(node.nt , key=lambda x: x.c)
+        else:
+            ns=list(filter(lambda x: x.v==0,node.nt))
+            chose=choice(ns)
+            #标记节点
+            chose.visit()
+        #如果中途结束了
+        if simulation(chose)==False:
+            return chose,False
+    return chose,simulation(chose)
+
     
-#模拟
+#模拟,获得结果
 def simulation(node):
     #如果是叶子节点，获得结果
     if node.nt is None:
         v=choice(node.roll)>5
-        print("none " ,v)
+        # print("none " ,v)
         return v
     else:
         #判断结果，如果可以，则模拟节点
         v=choice(node.roll)<=5
-        print("node " ,v)
+        # print("node " ,v)
         if v:
             return False
         else:
@@ -83,22 +98,20 @@ def update(subNode,value):
             update(subNode.pe,value)
         
 
-
+#simulate模拟算法
 def mcst(node):
     #构建访问信息节点
     #print("正在访问节点: " , node.id)
     for _ in range(0,100):
-        #选择
-        subNode,value=select_arm(node)
+        #决策树
+        #目前设计的是分为两个阶段，
+        #第一阶段是模拟数据，产生基础值
+        #第二阶段是根据数据产生决策并更新树
+        #这棵树可以自己扩展，自己模拟
+        #并根据数据决策选择的节点
+        subNode,value=simTree(node)
         print("模拟节点：",subNode.id)
-        #半路就失败了
-        if(value==True):
-             #反向更新
-            update(subNode,value)
-            print("获得模拟结果1：",value , subNode.c)
-            continue
-        #模拟
-        value=simulation(subNode)
+        #更新
         update(subNode,value)
         print("获得模拟结果2：",value)
         #print("正在反向更新节点:" , subNode.id , value)
