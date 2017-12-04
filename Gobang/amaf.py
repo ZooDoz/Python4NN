@@ -11,13 +11,16 @@ rave
 快速行动价值评估
 amaf值 
 对于棋类来说，所有的子节点是平等的
-mc值 访问某节点次数
+all_moves_as_first 
+选择节点，模拟，更新选择和模拟的节点
+(模拟的节点构成一棵树，
+如果更新到某个模拟的节点，这个节点如果和第一个节点颜色一致且发现是一个树，
+那么把这棵树当作新的更新)
 
-mc+amaf=估算值
-把当前快速落子类结果推广到别的节点上去
-获得评估值
+mc值 访问某节点次数
+amaf值 访问某节点的次数+访问别的节点的时候，后续访问到该节点的次数
 """
-class uct_rave(object):
+class amaf(object):
     """
     完全随机模拟
     """
@@ -67,17 +70,15 @@ class uct_rave(object):
       
 
         #获取ucb最大的节点
-        log_total = log(sum(value[0] for key,value in node.items()))
         bonus,move=max(
-            (self.eval(value)+sqrt(log_total/value[0]),key) for key,value in node.items())
+            (self.eval(value),key) for key,value in node.items())
         print("模拟次数：", simulations)
         location=board.move_to_location(move)
         print("Ai move: %d,%d\n" % (location[0],location[1]))
         return move
 
     def eval(self,node):
-
-        return node[1]/(node[0]*2) + (node[1]+node[3])/((node[0]+node[2])*2)
+        return (node[1]+node[3])/(node[0]+node[2])
     '''
 
     模拟树
@@ -88,12 +89,15 @@ class uct_rave(object):
         # print(len(node),l)
         #树上找到的节点
         n=[]
-        sn=[]
         #模拟出来的节点
+        sn=[]
+
+        ns=list(node.keys())
         #当前剩余可走位置
         #提出已经有信息的节点
         availables=list(filter(lambda x: x not in node or node[x][0]==0,board.availables))
-
+        # print(availables)
+        # print(len(availables))
         for _ in range(1, len(board.availables) + 1):
             #因为围棋比较特殊，所有剩余位置均为子节点,
             #所以需要所有位置均有信息才可能进行uct
@@ -103,18 +107,19 @@ class uct_rave(object):
                 player=board.get_player(play_turn)
                 #遍历剩余节点
                 #如果是当前玩家取胜率最大
-                log_total = log(sum(node[key][0] for key in board.availables))
                 if c_p==player:
                     #ubc1公式
                     bonus,move=max(
-                        (self.eval(node[key])+sqrt(log_total/node[key][0]),key) for key in board.availables)
+                        (self.eval(node[key]),key) for key in board.availables)
                     # print(c_p,player,"win",move)
                 else:
                     bonus,move=min(
-                        (self.eval(node[key])-sqrt(log_total/node[key][0]),key) for key in board.availables)
+                        (self.eval(node[key]),key) for key in board.availables)
                     # print(c_p,player,"win",move)
                 #记录选出来的模拟节点
                 n.append(move)
+                #消除记录里的点
+                ns.remove(move)
                 #更新棋盘
                 board.update(player,move)
                 #胜利
@@ -150,7 +155,7 @@ class uct_rave(object):
                 node[alln[t]]=[0,0,0,0]
             node.get(alln[t],[0,0,0,0])[0]+=1
             node.get(alln[t],[0,0,0,0])[1]+=w
-            if t%2==0:
+            if t>0:
                 node.get(alln[t],[0,0,0,0])[2]+=1
                 node.get(alln[t],[0,0,0,0])[3]+=w
 
