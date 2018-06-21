@@ -20,11 +20,12 @@ b = tf.Variable(tf.zeros([1]));
 W = tf.Variable(tf.random_uniform([1,2],-1.0,1.0));
 y = tf.matmul(W, x_data) + b;
 
-# 最小化方差
+# 定义回归的值，当这个值最小的时候，则达到最佳情况
 loss = tf.reduce_mean(tf.square(y - y_data))
 # 定义梯度下降算法
 optimizer = tf.train.GradientDescentOptimizer(0.5)
-# 
+# 使用梯度下降算法来进行回归
+# 调整b和W来达到loss最佳
 train = optimizer.minimize(loss)
 
 # 初始化变量
