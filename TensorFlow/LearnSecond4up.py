@@ -40,8 +40,8 @@ for i in range(100000):
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print(str(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))+' '+str(i/1000))
 
-# 有监督的学习算法初期表现很好，但是当训练次数过大时，会产生过度拟合现象。当训练次数大于70000时会出现结果下降的情况
-# 无监督学习，前期表现较差，但是随着训练的加深，表现会趋近变好(好像极限就是0.93左右)
+# cross_entropy法初期表现很好，但是当训练次数过大时，会产生过度拟合现象。当训练次数大于70000时会出现结果下降的情况
+# loss前期表现较差，但是随着训练的加深，表现会趋近变好(好像极限就是0.93左右)
 correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 print(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
