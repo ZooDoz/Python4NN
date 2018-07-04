@@ -146,46 +146,75 @@ data_index = 0
 
 
 # Step 3: Function to generate a training batch for the skip-gram model.
+# 分割数据成训练使用的数据格式
+'''
+@skip_window 左右词汇长度
+'''
 def generate_batch(batch_size, num_skips, skip_window):
+  # 全局的index，随着训练循环数据
   global data_index
+  # 判断获取训练词汇和本次从上下文中获取训练结果词汇数量是否整除
   assert batch_size % num_skips == 0
+  # 判断获取训练词汇个数要小于上下文词汇数量
   assert num_skips <= 2 * skip_window
   batch = np.ndarray(shape=(batch_size), dtype=np.int32)
   labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
+  # 获得上下文文本长度
   span = 2 * skip_window + 1  # [ skip_window target skip_window ]
+  # 初始化buffer,创建有最大长度的队列
   buffer = collections.deque(maxlen=span)  # pylint: disable=redefined-builtin
+  # 校验当前文本长度是否越界
   if data_index + span > len(data):
     data_index = 0
+  # 装在文本
   buffer.extend(data[data_index:data_index + span])
+  # 更新index
   data_index += span
+  # batch_size 训练样本数
+  # num_skips 从文本中取得的训练结果数量
+  # 循环数=训练样本数//单次获取训练结果数量
   for i in range(batch_size // num_skips):
+    # 获取上下文中的目标词汇
     context_words = [w for w in range(span) if w != skip_window]
+    # 随机出目标词汇
     words_to_use = random.sample(context_words, num_skips)
+    # 设置训练词汇和目标词汇
     for j, context_word in enumerate(words_to_use):
       batch[i * num_skips + j] = buffer[skip_window]
       labels[i * num_skips + j, 0] = buffer[context_word]
+    # 如果达到文末
     if data_index == len(data):
+      # 直接重置文本
       buffer.extend(data[0:span])
       data_index = span
     else:
+      # 将文本向后延申一个词汇
       buffer.append(data[data_index])
+      # 标识+1
       data_index += 1
+  # 标识向前移动了batch_size//num_skips + span个位置
   # Backtrack a little bit to avoid skipping words in the end of a batch
+  # 因为只处理了batch_size//num_skips个数据所以需要向前回滚span个位置
+  # 
   data_index = (data_index + len(data) - span) % len(data)
   return batch, labels
 
-
+# 测试获取训练数据
 batch, labels = generate_batch(batch_size=8, num_skips=2, skip_window=1)
 for i in range(8):
   print(batch[i], reverse_dictionary[batch[i]], '->', labels[i, 0],
         reverse_dictionary[labels[i, 0]])
 
 # Step 4: Build and train a skip-gram model.
-
+# 训练文本长度
 batch_size = 128
+# 次嵌入向量长度
 embedding_size = 128  # Dimension of the embedding vector.
+# 左右包含词个数
 skip_window = 1  # How many words to consider left and right.
+# 取样结果数
 num_skips = 2  # How many times to reuse an input to generate a label.
+# 负抽样数
 num_sampled = 64  # Number of negative examples to sample.
 
 # We pick a random validation set to sample nearest neighbors. Here we limit the
