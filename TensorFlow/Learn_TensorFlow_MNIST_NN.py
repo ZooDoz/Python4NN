@@ -112,10 +112,10 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
 W_fc2 = weight_variable([1024, 10])
 b_fc2 = bias_variable([10])
-# 对计算出的特征值进行线性回归
+# 对线性函数进行逻辑回归
 y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
-# 设置反向传播机制
+# 设置损失函数
 cross_entropy = -tf.reduce_sum(y_*tf.log(y_conv))
 # 梯度下降算法进行反向传播
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
