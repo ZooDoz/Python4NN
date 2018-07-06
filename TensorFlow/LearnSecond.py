@@ -13,7 +13,7 @@ x = tf.placeholder("float", [None, 784])
 W = tf.Variable(tf.zeros([784,10]))
 # 训练数据和w进行线性回归后的偏移量
 b = tf.Variable(tf.zeros([10]))
-# 对输入结果线性回归tf.matmul(x,W) + b
+# 对输入结果进行运算tf.matmul(x,W) + b
 # 后在进行softmax回归
 y = tf.nn.softmax(tf.matmul(x,W) + b)
 # 正确结果
